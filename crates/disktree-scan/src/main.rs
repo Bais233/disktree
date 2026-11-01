@@ -13,7 +13,7 @@ fn main() -> io::Result<()> {
             .spawn(|| {
                 std::thread::park_timeout(Duration::from_mins(5));
                 eprintln!(
-                    "Remote scan exceeded five minutes; scan a smaller path."
+                    "远程扫描超过五分钟；请扫描更小的路径。"
                 );
                 std::process::exit(1);
             })?;
@@ -33,7 +33,7 @@ fn main() -> io::Result<()> {
                                 std::process::exit(0);
                             }
                             _ => {
-                                eprintln!("Remote scan connection closed or sent unexpected input.");
+                                eprintln!("远程扫描连接已关闭，或收到意外输入。");
                                 std::process::exit(1);
                             }
                         }
@@ -54,7 +54,7 @@ fn main() -> io::Result<()> {
         );
         Ok(())
     } else {
-        Err(io::Error::other("unknown option; try --help"))
+        Err(io::Error::other("未知选项；试试 --help"))
     }
 }
 

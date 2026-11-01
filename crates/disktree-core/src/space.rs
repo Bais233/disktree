@@ -147,7 +147,7 @@ pub fn parse_mounts(table: &str) -> Vec<Mount> {
 /// Mount points below `root` that are not part of `root`'s volume, which a
 /// scan of that volume must not enter.
 ///
-/// "The volume" is the mount *source*, not the device number: btrfs gives
+/// "该卷" is the mount *source*, not the device number: btrfs gives
 /// every subvolume its own `st_dev`, so `/home` on Omarchy looks like a
 /// different filesystem from `/` though it is the same disk. Everything
 /// else is left out: pseudo filesystems (`/proc`, `/sys`), tmpfs, other
@@ -182,7 +182,7 @@ fn is_snapshot(mount: &Mount) -> bool {
         .is_some_and(|name| name == ".snapshots");
     named
         || mount.options.split(',').any(|option| {
-            option.starts_with("subvol=") && option.contains("snapshots")
+            option.starts_with("subvol=") && option.contains("快照")
         })
 }
 
@@ -771,14 +771,14 @@ pub fn volume_roots() -> io::Result<Vec<Volume>> {
     #[cfg(not(any(target_os = "macos", windows)))]
     {
         let mounts = mount_table()
-            .ok_or_else(|| io::Error::other("cannot read mount table"))?;
+            .ok_or_else(|| io::Error::other("无法读取挂载表"))?;
         Ok(volume_roots_in(&mounts))
     }
     #[cfg(target_os = "macos")]
     {
         let output = std::process::Command::new("mount").output()?;
         if !output.status.success() {
-            return Err(io::Error::other("cannot list mounted volumes"));
+            return Err(io::Error::other("无法列出挂载的卷"));
         }
         Ok(parse_macos_mounts(&String::from_utf8_lossy(&output.stdout))
             .into_iter()

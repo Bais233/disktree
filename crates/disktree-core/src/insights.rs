@@ -1,4 +1,4 @@
-//! "Worth a look": the biggest things in a scan that could plausibly go.
+//! "值得清理": the biggest things in a scan that could plausibly go.
 //!
 //! Three kinds of finding, each one a directory a person can judge in a
 //! second: reclaimable space ([`crate::classify::Reclaim`]), agent worktrees,
@@ -189,7 +189,7 @@ mod tests {
                         ],
                     )],
                 ),
-                dir("Documents", vec![file("tax.pdf", 9 * GIB, 400)]),
+                dir("文档", vec![file("tax.pdf", 9 * GIB, 400)]),
                 dir("tiny", vec![dir(".cache", vec![file("t", 1024, 1)])]),
             ],
         ))

@@ -17,12 +17,12 @@ pub enum Stage {
 impl Stage {
     pub const fn label(self) -> &'static str {
         match self {
-            Self::Connecting => "Connecting over SSH",
-            Self::CheckingHelper => "Checking remote scanner",
-            Self::UploadingHelper => "Uploading remote scanner",
-            Self::Starting => "Starting remote scanner",
-            Self::Indexing => "Indexing remotely",
-            Self::Finalizing => "Building the treemap",
+            Self::Connecting => "正在通过 SSH 连接",
+            Self::CheckingHelper => "正在检查远程扫描器",
+            Self::UploadingHelper => "正在上传远程扫描器",
+            Self::Starting => "正在启动远程扫描器",
+            Self::Indexing => "正在远程建立索引",
+            Self::Finalizing => "正在生成树图",
         }
     }
 }

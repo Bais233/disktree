@@ -140,7 +140,7 @@ pub fn meter_row(
 
 /// The volume meter: what is used, what is free, and what the marks will free.
 ///
-/// The projection is drawn as a separate segment so "this much comes back" is
+/// The projection is drawn as a separate segment so "可回收这么多" is
 /// visible rather than only stated.
 pub fn space_meter(space: SpaceInfo, reclaiming: u64, cx: &App) -> Div {
     let theme = cx.omarchy();
@@ -153,14 +153,14 @@ pub fn space_meter(space: SpaceInfo, reclaiming: u64, cx: &App) -> Div {
 
     let label = if reclaiming > 0 {
         format!(
-            "{} free · {} after removing {}",
+            "可用 {} · 删除 {} 后为 {}",
             human_bytes(space.available),
             human_bytes(projected.available),
             human_bytes(reclaiming)
         )
     } else {
         format!(
-            "{} free of {}",
+            "可用 {} / 共 {}",
             human_bytes(space.available),
             human_bytes(space.total)
         )
@@ -377,23 +377,17 @@ pub fn split_size(text: &str) -> (String, String) {
 /// How long ago a Unix time was, in the unit a person would use.
 pub fn ago(now: i64, then: i64) -> String {
     if then <= 0 {
-        return "unknown".to_string();
+        return "未知".to_string();
     }
     let seconds = (now - then).max(0);
-    let plural = |count: i64, unit: &str| {
-        if count == 1 {
-            format!("1 {unit} ago")
-        } else {
-            format!("{count} {unit}s ago")
-        }
-    };
+    let plural = |count: i64, unit: &str| format!("{count}{unit}前");
     match seconds {
-        0..60 => "just now".to_string(),
-        60..3_600 => plural(seconds / 60, "minute"),
-        3_600..86_400 => plural(seconds / 3_600, "hour"),
-        86_400..5_184_000 => plural(seconds / 86_400, "day"),
-        5_184_000..63_072_000 => plural(seconds / 2_592_000, "month"),
-        _ => plural(seconds / 31_536_000, "year"),
+        0..60 => "刚刚".to_string(),
+        60..3_600 => plural(seconds / 60, " 分钟"),
+        3_600..86_400 => plural(seconds / 3_600, " 小时"),
+        86_400..5_184_000 => plural(seconds / 86_400, " 天"),
+        5_184_000..63_072_000 => plural(seconds / 2_592_000, " 个月"),
+        _ => plural(seconds / 31_536_000, " 年"),
     }
 }
 
@@ -517,13 +511,13 @@ mod tests {
     #[test]
     fn ages_read_in_the_unit_a_person_would_use() {
         let now = 1_800_000_000;
-        assert_eq!(ago(now, now - 5), "just now");
+        assert_eq!(ago(now, now - 5), "刚刚");
         assert_eq!(ago(now, now - 120), "2 minutes ago");
         assert_eq!(ago(now, now - 3_600), "1 hour ago");
         assert_eq!(ago(now, now - 19 * 86_400), "19 days ago");
         assert_eq!(ago(now, now - 90 * 86_400), "3 months ago");
         assert_eq!(ago(now, now - 800 * 86_400), "2 years ago");
-        assert_eq!(ago(now, 0), "unknown");
+        assert_eq!(ago(now, 0), "未知");
     }
 
     #[test]

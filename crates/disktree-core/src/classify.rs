@@ -56,15 +56,15 @@ impl Category {
 
     pub const fn label(self) -> &'static str {
         match self {
-            Self::Code => "Code",
-            Self::AgentScratch => "Agent scratch",
-            Self::Toolchain => "Toolchains",
-            Self::Synced => "Synced",
+            Self::Code => "代码",
+            Self::AgentScratch => "AI 工作区",
+            Self::Toolchain => "工具链",
+            Self::Synced => "同步盘",
             Self::Git => "Git",
-            Self::Media => "Media",
-            Self::Documents => "Documents",
-            Self::Cache => "Cache",
-            Self::Other => "Other",
+            Self::Media => "媒体",
+            Self::Documents => "文档",
+            Self::Cache => "缓存",
+            Self::Other => "其他",
         }
     }
 }
@@ -93,18 +93,18 @@ pub enum Reclaim {
 }
 
 impl Reclaim {
-    /// The reason, as the "Worth a look" list says it.
+    /// The reason, as the "值得清理" list says it.
     pub const fn label(self) -> &'static str {
         match self {
-            Self::Regenerable => "regenerable",
-            Self::SyncHistory => "sync history",
-            Self::PackageStore => "package store",
-            Self::BuildOutput => "build output",
-            Self::Reinstallable => "reinstallable",
-            Self::SandboxLayers => "sandbox layers",
-            Self::Snapshots => "snapshots",
+            Self::Regenerable => "可再生缓存",
+            Self::SyncHistory => "同步历史",
+            Self::PackageStore => "包仓库",
+            Self::BuildOutput => "构建产物",
+            Self::Reinstallable => "可重装依赖",
+            Self::SandboxLayers => "沙箱层",
+            Self::Snapshots => "快照",
             Self::Trash => "trash",
-            Self::Temporary => "temporary",
+            Self::Temporary => "临时文件",
         }
     }
 }
@@ -212,7 +212,7 @@ pub fn reclaim_of(
         "node_modules" if has_sibling("package.json") => Reclaim::Reinstallable,
         // Layers and snapshots are only disposable inside sandbox state.
         "layers" if parent == Category::AgentScratch => Reclaim::SandboxLayers,
-        "snapshots" if parent == Category::AgentScratch => Reclaim::Snapshots,
+        "快照" if parent == Category::AgentScratch => Reclaim::Snapshots,
         "trash" | ".trash" | "$recycle.bin" => Reclaim::Trash,
         // `Temp` is where Windows puts temporary files, in AppData\Local;
         // `CrashDumps` beside it holds dumps of programs that crashed.
@@ -391,7 +391,7 @@ mod tests {
                     ".microsandbox",
                     vec![
                         dir("cache", vec![dir("layers", vec![file("f", 1)])]),
-                        dir("snapshots", vec![file("g", 1)]),
+                        dir("快照", vec![file("g", 1)]),
                     ],
                 ),
                 dir("Sync", vec![dir(".stversions", vec![file("h", 1)])]),
@@ -531,11 +531,11 @@ mod tests {
                 .is_some()
         );
         assert_eq!(
-            named(&home, &[".microsandbox", "snapshots"]).reclaim,
+            named(&home, &[".microsandbox", "快照"]).reclaim,
             Some(Reclaim::Snapshots)
         );
         assert_eq!(
-            reclaim_of("snapshots", Category::Documents, |_| false),
+            reclaim_of("快照", Category::Documents, |_| false),
             None
         );
     }

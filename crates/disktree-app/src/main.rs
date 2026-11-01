@@ -52,48 +52,49 @@ struct Args {
 }
 
 const USAGE: &str = "\
-disktree — a treemap of what is using your disk
+disktree — 用树状图看清磁盘被什么占满
 
-usage: disktree [OPTIONS] [PATH]
-       disktree ssh HOST [OPTIONS] [PATH]
-       disktree extract-scanner ARCH OUTPUT
+用法: disktree [选项] [路径]
+      disktree ssh 主机 [选项] [路径]
+      disktree extract-scanner 架构 输出文件
 
-Linux packaged builds deploy an embedded static scanner over SSH on demand.
-Unbundled development builds need disktree-scan on the remote PATH or in
-~/.local/bin. ARCH for extraction is x86_64 or aarch64.
-SSH uses your config, keys and agent; password prompts use the terminal.
-Remote sessions are read-only: mark, export list/prompt/delete script.
-Use --check with ssh to deploy and scan without opening a window.
+Linux 打包版会按需通过 SSH 部署内置的静态扫描器。
+未打包的开发版需要远程 PATH 或 ~/.local/bin 里有 disktree-scan。
+提取用的架构是 x86_64 或 aarch64。
+SSH 使用你已有的配置、密钥与 agent；密码询问走终端。
+远程会话为只读：可标记，可导出清单/提示词/删除脚本。
+配合 --check 用 ssh 可部署并扫描，不打开窗口。
 
-arguments:
-  PATH              explicit directory to scan; omitted opens root selection
+参数:
+  路径              指定要扫描的目录；省略则打开根目录选择界面
 
-Without PATH, choose this computer or SSH, then a mount or directory.
-No scan starts before explicit acceptance. Nested mounts are excluded.
-With PATH the window scans it directly, largest first. Space marks the
-selected tile, Enter opens it, c reviews the marked list, ? lists every key.
+不带路径时，先选这台电脑或 SSH，再选挂载点或目录。
+在你明确确认前不会开始扫描。嵌套挂载点不计入。
+带路径时窗口直接扫描它，大的在前。空格标记选中方块，
+回车进入，c 审阅标记清单，? 列出全部按键。
 
-options:
-  -a, --apparent-size   measure apparent length instead of allocated blocks
-  -l, --follow-links    follow symlinks (local scans only)
-  -H, --no-hidden       skip dotfiles and dot-directories
-  -D, --disk            scan the whole disk the home directory is on
+选项:
+  -a, --apparent-size   按表观大小而非占用块计算
+  -l, --follow-links    跟随符号链接（仅本地扫描）
+  -H, --no-hidden       跳过点文件和点目录
+  -D, --disk            扫描主目录所在的整块磁盘
   -X, --cross-filesystems
-                        also measure other disks, network shares and pseudo
-                        filesystems mounted below PATH (local only; off by default)
-  -d, --depth N         how many levels to draw at once (1-6, default 3)
+                        同时测量路径下挂载的其他磁盘、网络共享与伪
+                        文件系统（仅本地；默认关闭）
+  -d, --depth N         一次绘制的层级数（1-6，默认 3）
       --power-efficiency PRESET
-                        miser, balanced (default), aggressive, drain-my-battery
-      --scan-threads N  fixed scan workers, capped by available CPU count
+                        miser(省电)、balanced(均衡，默认)、aggressive(激进)、
+                        drain-my-battery(火力全开)
+      --scan-threads N  固定扫描线程数，不超过 CPU 核数
       --adaptive-threads
-                        experimental adaptive admission (opt-in)
-      --fixed-threads   disable adaptive admission and CPU governor
+                        实验性自适应线程准入（需显式开启）
+      --fixed-threads   禁用自适应线程与 CPU 调速
       --thread-throughput-percent N
-                        retain this percent of sampled initial throughput (80)
+                        保留初始吞吐采样的该百分比（80）
       --thread-system-cpu-percent N
-                        best-effort host CPU budget; 0 disables it (80)
-      --metric files    rank by file count instead of bytes
-  -h, --help            show this help
+                        尽力限制主机 CPU 占用；0 为禁用（80）
+      --metric files    按文件数而非字节数排序
+  -h, --help            显示本帮助
 ";
 
 fn main() -> Result<()> {
@@ -115,7 +116,7 @@ fn run() -> Result<()> {
             |path| power::load(&path),
         )
         .unwrap_or_else(|error| {
-            eprintln!("Cannot load Power Efficiency: {error}; using Balanced");
+            eprintln!("无法加载电源效率设置：{error}；改用均衡");
             power::PowerEfficiency::default()
         });
     let args = parse_args_with_power(std::env::args_os().skip(1), saved)?;
@@ -124,7 +125,7 @@ fn run() -> Result<()> {
         let host = args
             .remote
             .as_deref()
-            .context("--check requires disktree ssh HOST")?;
+            .context("--check 需要配合 disktree ssh 主机使用")?;
         let scan = disktree_core::remote::RemoteScan::spawn(
             host,
             &disktree_core::remote::Request {
@@ -250,7 +251,7 @@ fn run() -> Result<()> {
                         })
                     },
                 )
-                .expect("open the disktree window");
+                .expect("打开 disktree 窗口");
 
             // The treemap owns the keyboard from the first frame; there is no
             // text field to focus first.
@@ -271,11 +272,11 @@ fn extract_scanner() -> Result<bool> {
     }
     anyhow::ensure!(
         args.len() == 3,
-        "usage: disktree extract-scanner ARCH OUTPUT"
+        "用法: disktree extract-scanner 架构 输出文件"
     );
     let archive = disktree_core::payload::Archive::current()?
         .context("no embedded scanners; build with cargo xtask portable")?;
-    let arch = args[1].to_str().context("ARCH must be x86_64 or aarch64")?;
+    let arch = args[1].to_str().context("架构必须是 x86_64 或 aarch64")?;
     let (_, bytes) = archive.load(arch)?;
     let mut output = std::fs::OpenOptions::new()
         .write(true)
@@ -288,7 +289,7 @@ fn extract_scanner() -> Result<bool> {
         output.set_permissions(std::fs::Permissions::from_mode(0o700))?;
     }
     println!(
-        "Extracted Linux {arch} scanner to {}",
+        "已提取 Linux {arch} 扫描器到 {}",
         PathBuf::from(&args[2]).display()
     );
     Ok(true)
@@ -325,7 +326,7 @@ fn parse_args_with_power(
     let remote = if args.peek().is_some_and(|arg| arg == "ssh") {
         args.next();
         let host =
-            text(args.next(), "ssh needs a host, e.g. disktree ssh dev")?;
+            text(args.next(), "ssh 需要主机名，例如 disktree ssh dev")?;
         disktree_core::remote::validate_host(&host)?;
         Some(host)
     } else {
@@ -348,30 +349,30 @@ fn parse_args_with_power(
             "-D" | "--disk" => disk = true,
             "--check" => check = true,
             "-d" | "--depth" => {
-                let value = text(args.next(), "--depth needs a number")?;
-                depth = value.parse().context("--depth needs a number")?;
+                let value = text(args.next(), "--depth 需要一个数字")?;
+                depth = value.parse().context("--depth 需要一个数字")?;
                 anyhow::ensure!(
                     (1..=6).contains(&depth),
-                    "--depth must be 1 to 6"
+                    "--depth 必须在 1 到 6 之间"
                 );
             }
             "--power-efficiency" => {
                 let value =
-                    text(args.next(), "--power-efficiency needs a preset")?;
+                    text(args.next(), "--power-efficiency 需要一个预设")?;
                 let preset = power::PowerEfficiency::parse(&value)
-                    .context("unknown Power Efficiency preset")?;
+                    .context("未知电源效率预设")?;
                 options.threads = preset.policy(power::cpu_threads());
                 power = Some(preset);
             }
             "--scan-threads" => {
                 power = None;
-                let value = text(args.next(), "--scan-threads needs a number")?;
+                let value = text(args.next(), "--scan-threads 需要一个数字")?;
                 options.threads.max_threads = value
                     .parse()
-                    .context("--scan-threads needs a positive integer")?;
+                    .context("--scan-threads 需要正整数")?;
                 anyhow::ensure!(
                     options.threads.max_threads > 0,
-                    "--scan-threads must be positive"
+                    "--scan-threads 必须为正"
                 );
             }
             "--fixed-threads" => {
@@ -386,14 +387,14 @@ fn parse_args_with_power(
             "--thread-throughput-percent" => {
                 let value = text(
                     args.next(),
-                    "--thread-throughput-percent needs a number",
+                    "--thread-throughput-percent 需要一个数字",
                 )?;
                 let percent: u8 = value
                     .parse()
-                    .context("throughput percent must be 1 to 100")?;
+                    .context("吞吐百分比必须在 1 到 100 之间")?;
                 anyhow::ensure!(
                     (1..=100).contains(&percent),
-                    "throughput percent must be 1 to 100"
+                    "吞吐百分比必须在 1 到 100 之间"
                 );
                 options.threads.retained_throughput =
                     f64::from(percent) / 100.0;
@@ -401,21 +402,21 @@ fn parse_args_with_power(
             "--thread-system-cpu-percent" => {
                 let value = text(
                     args.next(),
-                    "--thread-system-cpu-percent needs a number",
+                    "--thread-system-cpu-percent 需要一个数字",
                 )?;
                 let percent: u8 =
-                    value.parse().context("CPU percent must be 0 to 100")?;
-                anyhow::ensure!(percent <= 100, "CPU percent must be 0 to 100");
+                    value.parse().context("CPU 百分比必须在 0 到 100 之间")?;
+                anyhow::ensure!(percent <= 100, "CPU 百分比必须在 0 到 100 之间");
                 options.threads.system_cpu_limit =
                     (percent > 0).then(|| f64::from(percent) / 100.0);
             }
             "--metric" => {
-                let value = text(args.next(), "--metric needs a value")?;
+                let value = text(args.next(), "--metric 需要一个值")?;
                 options.metric = match value.as_str() {
                     "files" => disktree_core::tree::Metric::Files,
                     "bytes" | "size" => disktree_core::tree::Metric::Bytes,
                     other => anyhow::bail!(
-                        "unknown metric {other}; try bytes or files"
+                        "未知指标 {other}；可用 bytes 或 files"
                     ),
                 };
             }
@@ -426,7 +427,7 @@ fn parse_args_with_power(
                 anyhow::bail!("unknown option {other}\n\n{USAGE}");
             }
             _ => {
-                anyhow::ensure!(root.is_none(), "only one path can be scanned");
+                anyhow::ensure!(root.is_none(), "只能扫描一个路径");
                 root = Some(PathBuf::from(arg));
             }
         }
@@ -434,7 +435,7 @@ fn parse_args_with_power(
 
     anyhow::ensure!(
         !(disk && root.is_some()),
-        "--disk and a PATH cannot be combined"
+        "--disk 不能与 PATH 同时使用"
     );
     let choose_root = root.is_none() && !disk && !check;
     if remote.is_some() {
@@ -468,10 +469,10 @@ fn parse_args_with_power(
     } else {
         let root = dunce::canonicalize(&root).unwrap_or(root);
         let metadata = std::fs::metadata(&root)
-            .with_context(|| format!("cannot read {}", root.display()))?;
+            .with_context(|| format!("无法读取 {}", root.display()))?;
         anyhow::ensure!(
             metadata.is_dir(),
-            "{} is not a directory",
+            "{} 不是目录",
             root.display()
         );
         root

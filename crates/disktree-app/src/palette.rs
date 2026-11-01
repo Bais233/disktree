@@ -66,10 +66,10 @@ pub fn category_accent(theme: &Theme, category: Category) -> Hsla {
 /// The age ramp, newest first: this week, this month, this half-year, this
 /// year, older.
 pub const AGE_BUCKETS: [(i64, &str); 5] = [
-    (7, "This week"),
-    (30, "This month"),
-    (182, "Six months"),
-    (365, "This year"),
+    (7, "本周"),
+    (30, "本月"),
+    (182, "半年内"),
+    (365, "今年"),
     (i64::MAX, "Older"),
 ];
 

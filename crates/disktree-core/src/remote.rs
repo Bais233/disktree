@@ -159,7 +159,7 @@ fn receive_line(input: &mut impl BufRead, line: &mut String) -> io::Result<()> {
     if length == 0 {
         return Err(io::Error::new(
             io::ErrorKind::UnexpectedEof,
-            "remote helper closed the connection without a complete scan",
+            "远程扫描器在完成前关闭了连接",
         ));
     }
     if !line.ends_with('\n') {
@@ -234,7 +234,7 @@ fn serve_request_with_progress(
     let root = request
         .root
         .or_else(|| home.clone())
-        .ok_or_else(|| io::Error::other("no remote home directory"))?;
+        .ok_or_else(|| io::Error::other("远程没有主目录"))?;
     let root = if request.disk {
         volume_root_for(&root).unwrap_or_else(|| PathBuf::from("/"))
     } else {
@@ -242,7 +242,7 @@ fn serve_request_with_progress(
     }
     .canonicalize()?;
     if !root.is_dir() {
-        return Err(io::Error::other("scan root is not a directory"));
+        return Err(io::Error::other("扫描根目录不是一个目录"));
     }
     send(
         out,
@@ -313,7 +313,7 @@ fn read_snapshot_with_progress(
 ) -> io::Result<Snapshot> {
     let header: Header = receive(input)?;
     if header.version != VERSION || !header.root.is_absolute() {
-        return Err(io::Error::other("incompatible remote helper protocol"));
+        return Err(io::Error::other("远程扫描器协议版本不兼容"));
     }
     let mut progress = Progress {
         stage: Stage::Indexing,
@@ -390,7 +390,7 @@ fn read_snapshot_with_progress(
             || (cfg!(windows) && name.contains(['\\', ':']))
         {
             return Err(io::Error::other(format!(
-                "remote name cannot be represented safely: {name:?}"
+                "远程文件名无法安全表示：{name:?}"
             )));
         }
         if count > stack.len() {
@@ -477,7 +477,7 @@ pub fn validate_host(host: &str) -> io::Result<()> {
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || "@._-:[]".contains(c))
     {
-        return Err(io::Error::other("invalid SSH destination"));
+        return Err(io::Error::other("无效的 SSH 目标"));
     }
     Ok(())
 }
@@ -513,19 +513,19 @@ fn ssh_error(host: &str, details: &str, fallback: &io::Error) -> io::Error {
         || reason.contains("Authentication failed")
     {
         format!(
-            "Run ssh {host} in a terminal to verify your credentials. \
-             When starting disktree from a terminal, SSH can ask for a \
-             password there; GUI launches need an agent or SSH askpass."
+            "请在终端运行 ssh {host} 检查登录凭据。\
+             从终端启动 disktree 时，SSH 可能在那里询问密码；\
+             图形界面启动则需要 agent 或 SSH askpass。"
         )
     } else if reason.contains("Host key verification failed") {
-        format!("Run ssh {host} in a terminal and verify its host key first.")
+        format!("请先在终端运行 ssh {host} 并确认主机密钥。")
     } else if reason.contains("not installed") || reason.contains("not found") {
         format!(
-            "Install disktree-scan ON {host}, not on this computer. \
-             Run make install-scan from the checkout on the server."
+            "请在 {host}（而不是这台电脑）上安装 disktree-scan。\
+             在服务器上的源码目录里运行 make install-scan。"
         )
     } else {
-        "No incomplete scan is shown. Retry, or choose another root.".into()
+        "没有可续扫的未完成扫描。请重试，或另选根目录。".into()
     };
     io::Error::other(format!("SSH {host}: {reason}\n\n{hint}"))
 }
@@ -703,7 +703,7 @@ impl<T: Send + 'static> RemoteJob<T> {
                 (_, Ok(status)) => Err(ssh_error(
                     &host,
                     &details,
-                    &io::Error::other(format!("SSH exited with {status}")),
+                    &io::Error::other(format!("SSH 以状态码 {status} 退出")),
                 )),
             };
             let _ = tx.send(outcome);
@@ -757,7 +757,7 @@ mod tests {
             if let Some(result) = scan.poll() {
                 return result;
             }
-            assert!(std::time::Instant::now() < deadline, "SSH scan hung");
+            assert!(std::time::Instant::now() < deadline, "SSH 扫描失去响应");
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
     }

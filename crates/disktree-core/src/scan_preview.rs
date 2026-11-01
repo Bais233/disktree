@@ -34,14 +34,14 @@ impl Builder {
             let index = self.entries.len();
             self.index.insert(key.into(), index);
             self.entries.push(Entry {
-                name: name.unwrap_or("Files in root").into(),
+                name: name.unwrap_or("根目录下的文件").into(),
                 ..Entry::default()
             });
             index
         } else {
             if self.entries.len() == LIMIT {
                 self.entries.push(Entry {
-                    name: "Other indexed paths".into(),
+                    name: "其他已索引路径".into(),
                     ..Entry::default()
                 });
             }

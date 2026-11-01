@@ -100,7 +100,7 @@ pub fn panel_width(pointer_x: f32, viewport: f32, rem: f32) -> f32 {
     width.clamp(PANEL_MIN_REMS, max)
 }
 
-/// How many "worth a look" findings the panel lists.
+/// How many "值得清理" findings the panel lists.
 const INSIGHT_LIMIT: usize = 6;
 
 /// Which screen the app is showing.
@@ -220,7 +220,7 @@ impl View {
 /// address. Rather than moving a camera, each tile is drawn from where that
 /// region *was* to where it *is*, so the tiles inside the directory that is
 /// being entered grow into place and the ones being left slide out. That is
-/// what makes "zoom in and descend" read as one motion: the newly visible
+/// what makes "放大并进入" read as one motion: the newly visible
 /// level is always larger than it was a moment ago, never smaller.
 #[derive(Clone, Copy, Debug)]
 pub struct LayoutTransition {
@@ -444,7 +444,7 @@ pub struct Disktree {
     /// A restart as administrator was asked for and not yet declined, so a
     /// second click does not raise a second prompt.
     pub restarting: bool,
-    /// The top of the disk the scanned root lives on: what "Whole disk"
+    /// The top of the disk the scanned root lives on: what "整块磁盘"
     /// scans. Follows the root when a folder is opened.
     pub disk_root: Option<PathBuf>,
     /// The volume picker: open, what it listed, and which row the keys are
@@ -682,7 +682,7 @@ impl Disktree {
         }
         self.space = space_info(&root).ok();
         self.device = device_for(&root);
-        // "Whole disk" means the disk of what is on screen, which a new root
+        // "整块磁盘" means the disk of what is on screen, which a new root
         // can change: an external drive has its own.
         self.disk_root =
             volume_root_for(&root).or_else(|| self.disk_root.take());
@@ -846,7 +846,7 @@ impl Disktree {
                         0,
                         disktree_core::space::Volume {
                             point: home,
-                            device: Some("Home directory".into()),
+                            device: Some("主目录".into()),
                             space: None,
                         },
                     );
@@ -867,7 +867,7 @@ impl Disktree {
             let value = self.volumes_source.clone().unwrap_or_default();
             let host = cx.new(|cx| {
                 InputState::new(window, cx)
-                    .placeholder("SSH alias or user@host")
+                    .placeholder("SSH 别名或 user@host")
                     .default_value(value)
             });
             cx.subscribe(&host, |this, _, event, cx| {
@@ -943,14 +943,14 @@ impl Disktree {
         }
         if !self.picker_source_matches(cx) {
             self.picker_error = Some(
-                "Connect SSH or choose This computer before scanning.".into(),
+                "扫描前请先连接 SSH 或选择「这台电脑」。".into(),
             );
             cx.notify();
             return;
         }
         if !path.is_absolute() {
             self.picker_error =
-                Some("Enter an absolute directory path.".into());
+                Some("请输入绝对路径的目录。".into());
             cx.notify();
             return;
         }
@@ -959,7 +959,7 @@ impl Disktree {
                 Ok(root) if root.is_dir() => path = root,
                 _ => {
                     self.picker_error =
-                        Some("Cannot open that local directory.".into());
+                        Some("无法打开该本地目录。".into());
                     cx.notify();
                     return;
                 }
@@ -1051,7 +1051,7 @@ impl Disktree {
         }
     }
 
-    /// Recompute "worth a look" from the tree on screen.
+    /// Recompute "值得清理" from the tree on screen.
     fn refresh_insights(&mut self) {
         self.scanned_at = now_seconds();
         self.insights = self.tree.as_deref().map_or_else(Vec::new, |tree| {
@@ -1149,7 +1149,7 @@ impl Disktree {
         self.notice = Some(match self.power_settings_path.as_deref() {
             Some(path) => match crate::power::save(path, preset) {
                 Ok(()) => (
-                    format!("{label} from the next scan; r rescans now"),
+                    format!("{label} 已排除出下次扫描；按 r 立即重扫"),
                     Status::Success,
                 ),
                 Err(error) => (
@@ -1317,7 +1317,7 @@ impl Disktree {
         if self.remote_identity != identity && !self.marks.is_empty() {
             self.marks.clear();
             self.notice = Some((
-                "Remote identity changed; previous marks were cleared.".into(),
+                "远程主机身份已变化；之前的标记已清空。".into(),
                 Status::Warning,
             ));
         }
@@ -1356,7 +1356,7 @@ impl Disktree {
                     self.remote_platform = snapshot.header.platform;
                     self.update_remote_identity(snapshot.header.identity);
                     self.device = self.remote.as_ref().map(|host| {
-                        format!("{host} · read-only · space at scan")
+                        format!("{host} · 只读 · 空间以扫描时为准")
                     });
                     let node = snapshot.tree;
                     self.marks.refresh(
@@ -1931,7 +1931,7 @@ impl Disktree {
         }
     }
 
-    /// Show `crumbs` in its directory, selected: what a "worth a look" row
+    /// Show `crumbs` in its directory, selected: what a "值得清理" row
     /// or a found name does.
     pub fn reveal(&mut self, crumbs: Vec<usize>, cx: &mut Context<'_, Self>) {
         let parent = crumbs[..crumbs.len().saturating_sub(1)].to_vec();
@@ -2088,7 +2088,7 @@ impl Disktree {
         };
         if crumbs.is_empty() {
             self.notice = Some((
-                "the scanned root cannot be removed; open a directory first"
+                "扫描根目录不能删除；请先进入某个目录"
                     .into(),
                 Status::Warning,
             ));
@@ -2118,7 +2118,7 @@ impl Disktree {
         {
             self.notice = Some((
                 format!(
-                    "{} goes with the marked {}; unmark that to keep it",
+                    "{} 随已标记的 {} 一并处理；要保留请先取消后者的标记",
                     display_path(&target.path, self.home.as_deref()),
                     display_path(&ancestor, self.home.as_deref())
                 ),
@@ -2145,10 +2145,9 @@ impl Disktree {
             if !inside.is_empty() {
                 self.notice = Some((
                     format!(
-                        "{} now covers {} mark{} inside it",
+                        "{} 现已包含其内 {} 个标记",
                         display_path(&path, self.home.as_deref()),
-                        inside.len(),
-                        if inside.len() == 1 { "" } else { "s" }
+                        inside.len()
                     ),
                     Status::Neutral,
                 ));
@@ -2630,7 +2629,7 @@ impl Disktree {
         }
         let plan = self.plan();
         if plan.is_empty() {
-            self.notice = Some(("nothing is marked".into(), Status::Warning));
+            self.notice = Some(("没有标记任何内容".into(), Status::Warning));
             cx.notify();
             return;
         }
@@ -2638,7 +2637,7 @@ impl Disktree {
         // would stop a permanent delete halfway.
         if self.restarting {
             self.notice = Some((
-                "not while restarting as administrator".into(),
+                "管理员重启进行中，暂不可操作".into(),
                 Status::Warning,
             ));
             cx.notify();
@@ -2786,7 +2785,7 @@ impl Disktree {
         };
         if matches.count == 0 {
             self.notice = Some((
-                format!("nothing here matches {}", matches.needle),
+                format!("这里没有匹配 {} 的内容", matches.needle),
                 Status::Warning,
             ));
             cx.notify();
@@ -2891,7 +2890,7 @@ impl Disktree {
     fn save_export(&mut self, script: bool, cx: &mut Context<'_, Self>) {
         let plan = self.plan();
         if plan.is_empty() {
-            self.notice = Some(("nothing to save".into(), Status::Warning));
+            self.notice = Some(("没有可保存的内容".into(), Status::Warning));
             cx.notify();
             return;
         }
@@ -2923,7 +2922,7 @@ impl Disktree {
                     Status::Success,
                 ),
                 Err(error) => (
-                    format!("could not save {}: {error}", path.display()),
+                    format!("无法保存 {}：{error}", path.display()),
                     Status::Error,
                 ),
             };
@@ -2952,12 +2951,12 @@ impl Disktree {
     pub fn copy_delete_script(&mut self, cx: &mut Context<'_, Self>) {
         let plan = self.plan();
         if plan.is_empty() {
-            self.notice = Some(("nothing to copy".into(), Status::Warning));
+            self.notice = Some(("没有可复制的内容".into(), Status::Warning));
         } else {
             let script = self.delete_script(&plan.targets);
             cx.write_to_clipboard(gpui_kit::ClipboardItem::new_string(script));
             self.notice = Some((
-                "copied delete script; previews by default, checks host before deletion".into(),
+                "已复制删除脚本；默认仅预览，删除前校验主机".into(),
                 Status::Success,
             ));
         }
@@ -2969,7 +2968,7 @@ impl Disktree {
     pub fn copy_agent_prompt(&mut self, cx: &mut Context<'_, Self>) {
         let plan = self.plan();
         if plan.is_empty() {
-            self.notice = Some(("nothing to copy".into(), Status::Warning));
+            self.notice = Some(("没有可复制的内容".into(), Status::Warning));
             cx.notify();
             return;
         }
@@ -3001,7 +3000,7 @@ impl Disktree {
         let count = plan.targets.len();
         self.notice = Some((
             format!(
-                "copied a prompt for your agent: {count} {}, {}",
+                "已复制给 AI 助手的提示词：{count} {}，{}",
                 if count == 1 { "path" } else { "paths" },
                 disktree_core::size::human_bytes(plan.bytes())
             ),
@@ -3024,7 +3023,7 @@ impl Disktree {
         if std::fs::symlink_metadata(&path).is_err() {
             self.notice = Some((
                 format!(
-                    "{} is no longer on disk",
+                    "{} 已不在磁盘上",
                     crate::marks::display_path(&path, self.home.as_deref())
                 ),
                 Status::Warning,
@@ -3135,7 +3134,7 @@ impl Disktree {
                 {
                     run.cancel();
                     self.notice = Some((
-                        "stopping after the current item".into(),
+                        "处理完当前项后停止".into(),
                         Status::Warning,
                     ));
                     cx.notify();
@@ -3157,7 +3156,7 @@ impl Disktree {
         shift: bool,
         cx: &mut Context<'_, Self>,
     ) {
-        // Keys that act on "the current tile" start from the pointer when it
+        // Keys that act on "当前方块" start from the pointer when it
         // moved last.
         if matches!(
             key,
@@ -3212,7 +3211,7 @@ impl Disktree {
             "c" if !control => {
                 if self.marks.is_empty() {
                     self.notice = Some((
-                        "mark something first: space marks the selected tile"
+                        "请先标记：按空格标记选中的方块"
                             .into(),
                         Status::Warning,
                     ));
@@ -3606,7 +3605,7 @@ impl Disktree {
                 Err(error) => {
                     this.restarting = false;
                     this.notice = Some((
-                        format!("still not an administrator: {error}"),
+                        format!("仍不是管理员：{error}"),
                         Status::Warning,
                     ));
                     cx.notify();
@@ -3718,7 +3717,7 @@ impl Render for Disktree {
         // The titlebar names the directory on screen, however it got there:
         // a key, a click, a rescan or a folder chosen from the menu.
         let title = if self.awaiting_root {
-            "disktree · Choose a source".into()
+            "disktree · 选择来源".into()
         } else {
             format!(
                 "disktree{} · {}",

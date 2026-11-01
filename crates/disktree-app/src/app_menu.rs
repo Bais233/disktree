@@ -19,25 +19,25 @@ mod menu_actions {
     actions!(
         disktree,
         [
-            /// Quit the application.
+            /// 退出程序。
             Quit,
-            /// Hide the application's windows.
+            /// 隐藏程序窗口。
             Hide,
-            /// Hide every other application.
+            /// 隐藏其他应用。
             HideOthers,
-            /// Show every application again.
+            /// 重新显示所有应用。
             ShowAll,
-            /// Close the focused window, which quits: there is only one.
+            /// 关闭当前窗口（会退出程序：只有一个窗口）。
             CloseWindow,
-            /// Scan the current root again.
+            /// 重新扫描当前根目录。
             Rescan,
-            /// Choose a directory to scan.
+            /// 选择要扫描的目录。
             OpenFolder,
-            /// Reveal the tile a key acts on in Finder.
+            /// 在文件管理器中显示按键所作用的方块。
             ShowInFinder,
-            /// Back through the directories visited.
+            /// 返回访问过的上一个目录。
             GoBack,
-            /// Forward again, after going back.
+            /// 前进（撤销后退）。
             GoForward,
         ]
     );
@@ -94,23 +94,23 @@ pub fn install(cx: &mut App) {
         Menu::new("disktree").items([
             MenuItem::os_submenu("Services", SystemMenuType::Services),
             MenuItem::separator(),
-            MenuItem::action("Hide disktree", Hide),
-            MenuItem::action("Hide Others", HideOthers),
-            MenuItem::action("Show All", ShowAll),
+            MenuItem::action("隐藏 disktree", Hide),
+            MenuItem::action("隐藏其他", HideOthers),
+            MenuItem::action("全部显示", ShowAll),
             MenuItem::separator(),
-            MenuItem::action("Quit disktree", Quit),
+            MenuItem::action("退出 disktree", Quit),
         ]),
-        Menu::new("File").items([
-            MenuItem::action("Open Folder\u{2026}", OpenFolder),
-            MenuItem::action("Show in Finder", ShowInFinder),
+        Menu::new("文件").items([
+            MenuItem::action("打开目录\u{2026}", OpenFolder),
+            MenuItem::action("在访达中显示", ShowInFinder),
             MenuItem::separator(),
-            MenuItem::action("Rescan", Rescan),
+            MenuItem::action("重新扫描", Rescan),
             MenuItem::separator(),
-            MenuItem::action("Close Window", CloseWindow),
+            MenuItem::action("关闭窗口", CloseWindow),
         ]),
-        Menu::new("Go").items([
-            MenuItem::action("Back", GoBack),
-            MenuItem::action("Forward", GoForward),
+        Menu::new("前往").items([
+            MenuItem::action("后退", GoBack),
+            MenuItem::action("前进", GoForward),
         ]),
     ]);
 }

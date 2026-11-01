@@ -878,7 +878,7 @@ fn scan_on_pool(
     if !root_meta.is_dir() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            format!("{} is not a directory", root.display()),
+            format!("{} 不是目录", root.display()),
         ));
     }
     let resolved = root.canonicalize().ok();

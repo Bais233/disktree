@@ -33,10 +33,10 @@ impl PowerEfficiency {
 
     pub const fn name(self) -> &'static str {
         match self {
-            Self::Miser => "Miser",
-            Self::Balanced => "Balanced",
-            Self::Aggressive => "Aggressive",
-            Self::DrainMyBattery => "Drain My Battery",
+            Self::Miser => "省电",
+            Self::Balanced => "均衡",
+            Self::Aggressive => "激进",
+            Self::DrainMyBattery => "火力全开",
         }
     }
 
@@ -118,7 +118,7 @@ pub fn settings_path() -> Option<PathBuf> {
 pub fn load(path: &Path) -> io::Result<PowerEfficiency> {
     match std::fs::read_to_string(path) {
         Ok(value) => PowerEfficiency::parse(value.trim()).ok_or_else(|| {
-            io::Error::new(io::ErrorKind::InvalidData, "unknown power preset")
+            io::Error::new(io::ErrorKind::InvalidData, "未知电源预设")
         }),
         Err(error) if error.kind() == io::ErrorKind::NotFound => {
             Ok(PowerEfficiency::default())
